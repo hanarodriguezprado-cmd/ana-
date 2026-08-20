@@ -61,7 +61,7 @@
   <div id="sharedModalOverlay" class="modal-overlay hidden">
     <form id="sharedForm" class="modal">
       <h2>Compra compartida</h2>
-      <p class="modal-hint">Pon los totales completos: se dividen a la mitad automáticamente y esa mitad es la que se añade a tu Vinted.</p>
+      <p class="modal-hint">Pon los totales: se dividen a la mitad automáticamente y esa mitad es la que se añade a tu Vinted. Si aún no la has vendido, deja "Total de la venta" en blanco y guarda; vuelve aquí más tarde dejando "Total de la compra" en blanco para añadir solo la venta.</p>
 
       <label>
         Prenda
@@ -69,13 +69,13 @@
       </label>
 
       <label>
-        Total de la compra (€)
-        <input type="number" id="sharedBuyInput" inputmode="decimal" step="0.01" min="0" placeholder="0,00" required>
+        Total de la compra (€) <span class="label-optional">— déjalo en blanco si ya la añadiste y solo vienes a poner la venta</span>
+        <input type="number" id="sharedBuyInput" inputmode="decimal" step="0.01" min="0" placeholder="0,00">
       </label>
 
       <label>
         Fecha de la compra
-        <input type="date" id="sharedBuyDateInput" required>
+        <input type="date" id="sharedBuyDateInput">
       </label>
 
       <label>

@@ -433,22 +433,24 @@ els.sharedForm.addEventListener("submit", (ev) => {
   const item = els.sharedItemInput.value.trim();
   const buyTotal = parseFloat(els.sharedBuyInput.value) || 0;
   const sellTotal = parseFloat(els.sharedSellInput.value) || 0;
-  if (!item || buyTotal <= 0) return;
+  if (!item || (buyTotal <= 0 && sellTotal <= 0)) return;
 
   const sharedId = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
 
-  state.expenses.push({
-    id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "-buy",
-    amount: buyTotal / 2,
-    type: "gasto",
-    category: "vinted",
-    date: els.sharedBuyDateInput.value || todayIso(),
-    note: item,
-    shared: true,
-    sharedTotal: buyTotal,
-    sharedId,
-    createdAt: Date.now(),
-  });
+  if (buyTotal > 0) {
+    state.expenses.push({
+      id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "-buy",
+      amount: buyTotal / 2,
+      type: "gasto",
+      category: "vinted",
+      date: els.sharedBuyDateInput.value || todayIso(),
+      note: item,
+      shared: true,
+      sharedTotal: buyTotal,
+      sharedId,
+      createdAt: Date.now(),
+    });
+  }
 
   if (sellTotal > 0) {
     state.expenses.push({
