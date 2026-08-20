@@ -265,6 +265,39 @@ main {
 }
 .delete-btn:hover { color: var(--danger); }
 
+.vinted-history {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.month-group-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding: 0 2px;
+}
+
+.month-group-title {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.month-group-balance {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.month-group-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .empty-state {
   text-align: center;
   color: var(--text-dim);

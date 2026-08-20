@@ -48,6 +48,7 @@
 
     <section class="list-section">
       <ul id="expenseList" class="expense-list"></ul>
+      <div id="vintedHistory" class="vinted-history"></div>
       <p id="emptyState" class="empty-state">Todavía no has añadido ningún movimiento.</p>
     </section>
   </main>
@@ -81,7 +82,7 @@
         <input type="date" id="dateInput" required>
       </label>
 
-      <label>
+      <label id="noteLabel">
         Nota (opcional)
         <input type="text" id="noteInput" placeholder="Ej. Cena con amigos" maxlength="80">
       </label>

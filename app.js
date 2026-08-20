@@ -33,6 +33,7 @@ const els = {
   categoryChips: document.getElementById("categoryChips"),
   periodFilter: document.getElementById("periodFilter"),
   expenseList: document.getElementById("expenseList"),
+  vintedHistory: document.getElementById("vintedHistory"),
   emptyState: document.getElementById("emptyState"),
   addBtn: document.getElementById("addBtn"),
   modalOverlay: document.getElementById("modalOverlay"),
@@ -43,6 +44,7 @@ const els = {
   categoryLabel: document.getElementById("categoryLabel"),
   categoryInput: document.getElementById("categoryInput"),
   dateInput: document.getElementById("dateInput"),
+  noteLabel: document.getElementById("noteLabel"),
   noteInput: document.getElementById("noteInput"),
   cancelBtn: document.getElementById("cancelBtn"),
 };
@@ -85,11 +87,20 @@ function inPeriod(expense, today) {
   return state.periodFilter !== "month" || isSameMonth(expense.date, today);
 }
 
+function vintedExpenses() {
+  return state.expenses.filter((e) => e.category === "vinted");
+}
+
 function scopedExpenses() {
+  if (state.view === "vinted") return vintedExpenses();
   const today = todayIso();
-  return state.expenses
-    .filter((e) => inPeriod(e, today))
-    .filter((e) => state.view !== "vinted" || e.category === "vinted");
+  return state.expenses.filter((e) => inPeriod(e, today));
+}
+
+function monthLabel(monthKey) {
+  const d = new Date(monthKey + "-01T00:00:00");
+  const label = d.toLocaleDateString("es-ES", { month: "long", year: "numeric" });
+  return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
 function renderTabs() {
@@ -174,7 +185,36 @@ function buildBreakdownRow(label, pct, amount) {
   return row;
 }
 
+function buildItemRow(e, { primaryLabel, icon }) {
+  const isIncome = e.type === "ingreso";
+  const li = document.createElement("li");
+  li.className = "expense-item";
+  li.innerHTML = `
+    <span class="expense-icon">${icon}</span>
+    <span class="expense-info">
+      <div class="expense-category">${escapeHtml(primaryLabel)}</div>
+      <div class="expense-meta">${formatDate(e.date)}</div>
+    </span>
+    <span class="expense-amount${isIncome ? " income" : ""}">${isIncome ? "+" : "-"}${formatCurrency(e.amount)}</span>
+    <button class="delete-btn" aria-label="Borrar" data-id="${e.id}">✕</button>
+  `;
+  return li;
+}
+
+function wireDeleteButtons(container) {
+  container.querySelectorAll(".delete-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.expenses = state.expenses.filter((e) => e.id !== btn.dataset.id);
+      saveExpenses();
+      render();
+    });
+  });
+}
+
 function renderList() {
+  els.expenseList.style.display = "flex";
+  els.vintedHistory.style.display = "none";
+
   const filtered = getFilteredExpenses();
   els.expenseList.innerHTML = "";
 
@@ -186,28 +226,69 @@ function renderList() {
 
   filtered.forEach((e) => {
     const cat = categoryById[e.category] || CATEGORIES[CATEGORIES.length - 1];
-    const isIncome = e.type === "ingreso";
-    const li = document.createElement("li");
-    li.className = "expense-item";
-    li.innerHTML = `
-      <span class="expense-icon">${cat.icon}</span>
-      <span class="expense-info">
-        <div class="expense-category">${cat.label}</div>
-        <div class="expense-meta">${formatDate(e.date)}${e.note ? " · " + escapeHtml(e.note) : ""}</div>
-      </span>
-      <span class="expense-amount${isIncome ? " income" : ""}">${isIncome ? "+" : "-"}${formatCurrency(e.amount)}</span>
-      <button class="delete-btn" aria-label="Borrar" data-id="${e.id}">✕</button>
-    `;
-    els.expenseList.appendChild(li);
+    const label = cat.label + (e.note ? " · " + e.note : "");
+    els.expenseList.appendChild(buildItemRow(e, { primaryLabel: label, icon: cat.icon }));
   });
 
-  els.expenseList.querySelectorAll(".delete-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      state.expenses = state.expenses.filter((e) => e.id !== btn.dataset.id);
-      saveExpenses();
-      render();
-    });
+  wireDeleteButtons(els.expenseList);
+}
+
+function renderVintedHistory() {
+  els.expenseList.style.display = "none";
+  els.vintedHistory.style.display = "flex";
+
+  const items = vintedExpenses();
+  els.vintedHistory.innerHTML = "";
+
+  if (items.length === 0) {
+    els.emptyState.style.display = "block";
+    return;
+  }
+  els.emptyState.style.display = "none";
+
+  const byMonth = {};
+  items.forEach((e) => {
+    const key = e.date.slice(0, 7);
+    (byMonth[key] = byMonth[key] || []).push(e);
   });
+
+  Object.keys(byMonth)
+    .sort((a, b) => (a < b ? 1 : -1))
+    .forEach((monthKey) => {
+      const monthItems = byMonth[monthKey].sort((a, b) =>
+        a.date < b.date ? 1 : a.date > b.date ? -1 : b.createdAt - a.createdAt
+      );
+      const gasto = monthItems.filter((e) => e.type === "gasto").reduce((s, e) => s + e.amount, 0);
+      const ingreso = monthItems.filter((e) => e.type === "ingreso").reduce((s, e) => s + e.amount, 0);
+      const balance = ingreso - gasto;
+      const sign = balance > 0 ? "+" : balance < 0 ? "-" : "";
+
+      const group = document.createElement("div");
+      group.className = "month-group";
+
+      const header = document.createElement("div");
+      header.className = "month-group-header";
+      header.innerHTML = `
+        <span class="month-group-title">${monthLabel(monthKey)}</span>
+        <span class="month-group-balance" style="color:${balance >= 0 ? "var(--accent)" : "var(--danger)"}">
+          ${sign}${formatCurrency(Math.abs(balance))}
+        </span>
+      `;
+      group.appendChild(header);
+
+      const list = document.createElement("ul");
+      list.className = "month-group-list";
+      monthItems.forEach((e) => {
+        const isIncome = e.type === "ingreso";
+        const label = (e.note || "Sin nombre") + (isIncome ? " · Venta" : " · Compra");
+        list.appendChild(buildItemRow(e, { primaryLabel: label, icon: isIncome ? "💰" : "🛒" }));
+      });
+      group.appendChild(list);
+
+      els.vintedHistory.appendChild(group);
+    });
+
+  wireDeleteButtons(els.vintedHistory);
 }
 
 function escapeHtml(str) {
@@ -220,7 +301,11 @@ function render() {
   renderTabs();
   renderCategoryChips();
   renderSummary();
-  renderList();
+  if (state.view === "vinted") {
+    renderVintedHistory();
+  } else {
+    renderList();
+  }
 }
 
 function setType(type) {
@@ -241,10 +326,16 @@ function openModal() {
     els.categoryLabel.style.display = "none";
     els.categoryInput.value = forcedCategory;
     els.modalTitle.textContent = "Nuevo movimiento Vinted";
+    els.noteLabel.firstChild.textContent = "Prenda";
+    els.noteInput.placeholder = "Ej. Sudadera Nike";
+    els.noteInput.required = true;
   } else {
     els.categoryLabel.style.display = "flex";
     els.categoryInput.value = "comida";
     els.modalTitle.textContent = "Nuevo movimiento";
+    els.noteLabel.firstChild.textContent = "Nota (opcional)";
+    els.noteInput.placeholder = "Ej. Cena con amigos";
+    els.noteInput.required = false;
   }
 
   els.modalOverlay.classList.remove("hidden");
