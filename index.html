@@ -13,13 +13,27 @@
 <body>
   <header class="topbar">
     <h1>Mis Gastos</h1>
+    <div class="tabs" id="viewTabs">
+      <button class="tab active" data-view="general" type="button">General</button>
+      <button class="tab" data-view="vinted" type="button">👕 Vinted</button>
+    </div>
   </header>
 
   <main>
     <section class="summary card">
       <div class="summary-main">
-        <span class="summary-label">Gastado este mes</span>
+        <span class="summary-label" id="summaryLabel">Gastado este mes</span>
         <span class="summary-amount" id="monthTotal">0,00&nbsp;€</span>
+      </div>
+      <div class="summary-secondary">
+        <div class="stat-mini">
+          <span class="summary-label" id="incomeLabel">Ingresado</span>
+          <span id="monthIncome">0,00&nbsp;€</span>
+        </div>
+        <div class="stat-mini">
+          <span class="summary-label">Balance</span>
+          <span id="monthBalance">0,00&nbsp;€</span>
+        </div>
       </div>
       <div class="breakdown" id="breakdown"></div>
     </section>
@@ -34,22 +48,30 @@
 
     <section class="list-section">
       <ul id="expenseList" class="expense-list"></ul>
-      <p id="emptyState" class="empty-state">Todavía no has añadido ningún gasto.</p>
+      <p id="emptyState" class="empty-state">Todavía no has añadido ningún movimiento.</p>
     </section>
   </main>
 
-  <button id="addBtn" class="fab" aria-label="Añadir gasto">+</button>
+  <button id="addBtn" class="fab" aria-label="Añadir movimiento">+</button>
 
   <div id="modalOverlay" class="modal-overlay hidden">
     <form id="expenseForm" class="modal">
-      <h2>Nuevo gasto</h2>
+      <h2 id="modalTitle">Nuevo movimiento</h2>
+
+      <label>
+        Tipo
+        <div class="segmented" id="typeToggle">
+          <button type="button" class="seg-btn active" data-type="gasto">Gasto</button>
+          <button type="button" class="seg-btn" data-type="ingreso">Ingreso</button>
+        </div>
+      </label>
 
       <label>
         Importe (€)
         <input type="number" id="amountInput" inputmode="decimal" step="0.01" min="0" placeholder="0,00" required>
       </label>
 
-      <label>
+      <label id="categoryLabel">
         Categoría
         <select id="categoryInput" required></select>
       </label>

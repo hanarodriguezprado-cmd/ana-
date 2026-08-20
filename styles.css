@@ -39,6 +39,32 @@ body {
   font-weight: 700;
 }
 
+.tabs {
+  display: flex;
+  gap: 6px;
+  margin-top: 12px;
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 4px;
+}
+
+.tab {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  padding: 9px 10px;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tab.active {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
 main {
   padding: 0 16px;
   max-width: 480px;
@@ -72,6 +98,23 @@ main {
 .summary-amount {
   font-size: 32px;
   font-weight: 700;
+}
+
+.summary-secondary {
+  display: flex;
+  gap: 20px;
+}
+
+.stat-mini {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+#monthIncome {
+  color: var(--accent);
 }
 
 .breakdown {
@@ -207,6 +250,10 @@ main {
   white-space: nowrap;
 }
 
+.expense-amount.income {
+  color: var(--accent);
+}
+
 .delete-btn {
   background: none;
   border: none;
@@ -288,6 +335,31 @@ main {
   border-radius: 10px;
   padding: 12px;
   font-size: 15px;
+}
+
+.segmented {
+  display: flex;
+  gap: 6px;
+  background: var(--surface-2);
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.seg-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  padding: 9px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.seg-btn.active {
+  background: var(--accent);
+  color: #062012;
 }
 
 .modal-actions {
