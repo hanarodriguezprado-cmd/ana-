@@ -47,6 +47,16 @@ const els = {
   noteLabel: document.getElementById("noteLabel"),
   noteInput: document.getElementById("noteInput"),
   cancelBtn: document.getElementById("cancelBtn"),
+  sharedBtn: document.getElementById("sharedBtn"),
+  sharedModalOverlay: document.getElementById("sharedModalOverlay"),
+  sharedForm: document.getElementById("sharedForm"),
+  sharedItemInput: document.getElementById("sharedItemInput"),
+  sharedBuyInput: document.getElementById("sharedBuyInput"),
+  sharedBuyDateInput: document.getElementById("sharedBuyDateInput"),
+  sharedSellInput: document.getElementById("sharedSellInput"),
+  sharedSellDateInput: document.getElementById("sharedSellDateInput"),
+  sharedPreview: document.getElementById("sharedPreview"),
+  sharedCancelBtn: document.getElementById("sharedCancelBtn"),
 };
 
 function loadExpenses() {
@@ -108,6 +118,7 @@ function renderTabs() {
     btn.classList.toggle("active", btn.dataset.view === state.view);
   });
   els.filters.style.display = state.view === "vinted" ? "none" : "flex";
+  els.sharedBtn.classList.toggle("hidden", state.view !== "vinted");
 }
 
 function renderCategoryChips() {
@@ -187,13 +198,16 @@ function buildBreakdownRow(label, pct, amount) {
 
 function buildItemRow(e, { primaryLabel, icon }) {
   const isIncome = e.type === "ingreso";
+  const sharedMeta = e.shared
+    ? ` <span class="shared-badge">🤝 total ${formatCurrency(e.sharedTotal)}</span>`
+    : "";
   const li = document.createElement("li");
   li.className = "expense-item";
   li.innerHTML = `
     <span class="expense-icon">${icon}</span>
     <span class="expense-info">
       <div class="expense-category">${escapeHtml(primaryLabel)}</div>
-      <div class="expense-meta">${formatDate(e.date)}</div>
+      <div class="expense-meta">${formatDate(e.date)}${sharedMeta}</div>
     </span>
     <span class="expense-amount${isIncome ? " income" : ""}">${isIncome ? "+" : "-"}${formatCurrency(e.amount)}</span>
     <button class="delete-btn" aria-label="Borrar" data-id="${e.id}">✕</button>
@@ -346,6 +360,36 @@ function closeModal() {
   els.modalOverlay.classList.add("hidden");
 }
 
+function openSharedModal() {
+  els.sharedItemInput.value = "";
+  els.sharedBuyInput.value = "";
+  els.sharedSellInput.value = "";
+  els.sharedBuyDateInput.value = todayIso();
+  els.sharedSellDateInput.value = todayIso();
+  updateSharedPreview();
+  els.sharedModalOverlay.classList.remove("hidden");
+  els.sharedItemInput.focus();
+}
+
+function closeSharedModal() {
+  els.sharedModalOverlay.classList.add("hidden");
+}
+
+function updateSharedPreview() {
+  const buyTotal = parseFloat(els.sharedBuyInput.value) || 0;
+  const sellTotal = parseFloat(els.sharedSellInput.value) || 0;
+  const yourBuy = buyTotal / 2;
+  const yourSell = sellTotal / 2;
+  const yourBalance = yourSell - yourBuy;
+  const sign = yourBalance > 0 ? "+" : yourBalance < 0 ? "-" : "";
+
+  els.sharedPreview.innerHTML = `
+    <div class="row total"><span>Total compra / venta</span><span>${formatCurrency(buyTotal)} / ${formatCurrency(sellTotal)}</span></div>
+    <div class="row half"><span>Tu mitad</span><span>-${formatCurrency(yourBuy)} / +${formatCurrency(yourSell)}</span></div>
+    <div class="row half" style="color:${yourBalance >= 0 ? "var(--accent)" : "var(--danger)"}"><span>Tu balance</span><span>${sign}${formatCurrency(Math.abs(yourBalance))}</span></div>
+  `;
+}
+
 function populateCategorySelect() {
   els.categoryInput.innerHTML = CATEGORIES
     .map((c) => `<option value="${c.id}">${c.icon} ${c.label}</option>`)
@@ -373,6 +417,56 @@ els.modalOverlay.addEventListener("click", (ev) => {
 });
 els.periodFilter.addEventListener("change", () => {
   state.periodFilter = els.periodFilter.value;
+  render();
+});
+
+els.sharedBtn.addEventListener("click", openSharedModal);
+els.sharedCancelBtn.addEventListener("click", closeSharedModal);
+els.sharedModalOverlay.addEventListener("click", (ev) => {
+  if (ev.target === els.sharedModalOverlay) closeSharedModal();
+});
+els.sharedBuyInput.addEventListener("input", updateSharedPreview);
+els.sharedSellInput.addEventListener("input", updateSharedPreview);
+
+els.sharedForm.addEventListener("submit", (ev) => {
+  ev.preventDefault();
+  const item = els.sharedItemInput.value.trim();
+  const buyTotal = parseFloat(els.sharedBuyInput.value) || 0;
+  const sellTotal = parseFloat(els.sharedSellInput.value) || 0;
+  if (!item || buyTotal <= 0) return;
+
+  const sharedId = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
+
+  state.expenses.push({
+    id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "-buy",
+    amount: buyTotal / 2,
+    type: "gasto",
+    category: "vinted",
+    date: els.sharedBuyDateInput.value || todayIso(),
+    note: item,
+    shared: true,
+    sharedTotal: buyTotal,
+    sharedId,
+    createdAt: Date.now(),
+  });
+
+  if (sellTotal > 0) {
+    state.expenses.push({
+      id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "-sell",
+      amount: sellTotal / 2,
+      type: "ingreso",
+      category: "vinted",
+      date: els.sharedSellDateInput.value || todayIso(),
+      note: item,
+      shared: true,
+      sharedTotal: sellTotal,
+      sharedId,
+      createdAt: Date.now(),
+    });
+  }
+
+  saveExpenses();
+  closeSharedModal();
   render();
 });
 

@@ -254,6 +254,17 @@ main {
   color: var(--accent);
 }
 
+.shared-badge {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-dim);
+  background: rgba(148, 163, 184, 0.15);
+  border-radius: 6px;
+  padding: 1px 6px;
+}
+
 .delete-btn {
   background: none;
   border: none;
@@ -306,10 +317,18 @@ main {
   display: none;
 }
 
-.fab {
+.fab-stack {
   position: fixed;
   right: 20px;
   bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 14px;
+  z-index: 10;
+}
+
+.fab {
   width: 58px;
   height: 58px;
   border-radius: 50%;
@@ -319,7 +338,19 @@ main {
   border: none;
   box-shadow: 0 8px 24px rgba(34, 197, 94, 0.4);
   cursor: pointer;
-  z-index: 10;
+}
+
+.fab-secondary {
+  width: 46px;
+  height: 46px;
+  font-size: 20px;
+  background: var(--surface-2);
+  color: var(--text);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+.fab-secondary.hidden {
+  display: none;
 }
 
 .modal-overlay {
@@ -350,6 +381,44 @@ main {
 .modal h2 {
   margin: 0 0 4px;
   font-size: 18px;
+}
+
+.modal-hint {
+  margin: -8px 0 0;
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+
+.label-optional {
+  color: var(--text-dim);
+  font-weight: 400;
+  text-transform: none;
+}
+
+.shared-preview {
+  background: var(--surface-2);
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.shared-preview .row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.shared-preview .row.total {
+  color: var(--text-dim);
+}
+
+.shared-preview .row.half {
+  font-weight: 700;
+  padding-top: 4px;
+  border-top: 1px solid #334155;
 }
 
 .modal label {

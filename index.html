@@ -53,7 +53,49 @@
     </section>
   </main>
 
-  <button id="addBtn" class="fab" aria-label="Añadir movimiento">+</button>
+  <div id="fabStack" class="fab-stack">
+    <button id="sharedBtn" class="fab fab-secondary hidden" aria-label="Añadir compra compartida">🤝</button>
+    <button id="addBtn" class="fab" aria-label="Añadir movimiento">+</button>
+  </div>
+
+  <div id="sharedModalOverlay" class="modal-overlay hidden">
+    <form id="sharedForm" class="modal">
+      <h2>Compra compartida</h2>
+      <p class="modal-hint">Pon los totales completos: se dividen a la mitad automáticamente y esa mitad es la que se añade a tu Vinted.</p>
+
+      <label>
+        Prenda
+        <input type="text" id="sharedItemInput" placeholder="Ej. Cazadora Levi's" maxlength="80" required>
+      </label>
+
+      <label>
+        Total de la compra (€)
+        <input type="number" id="sharedBuyInput" inputmode="decimal" step="0.01" min="0" placeholder="0,00" required>
+      </label>
+
+      <label>
+        Fecha de la compra
+        <input type="date" id="sharedBuyDateInput" required>
+      </label>
+
+      <label>
+        Total de la venta (€) <span class="label-optional">— déjalo en blanco si aún no se ha vendido</span>
+        <input type="number" id="sharedSellInput" inputmode="decimal" step="0.01" min="0" placeholder="0,00">
+      </label>
+
+      <label id="sharedSellDateLabel">
+        Fecha de la venta
+        <input type="date" id="sharedSellDateInput">
+      </label>
+
+      <div class="shared-preview" id="sharedPreview"></div>
+
+      <div class="modal-actions">
+        <button type="button" id="sharedCancelBtn" class="btn-secondary">Cancelar</button>
+        <button type="submit" class="btn-primary">Guardar</button>
+      </div>
+    </form>
+  </div>
 
   <div id="modalOverlay" class="modal-overlay hidden">
     <form id="expenseForm" class="modal">
